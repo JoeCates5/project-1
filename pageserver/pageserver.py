@@ -91,21 +91,22 @@ def respond(sock):
 
     parts = request.split()
     if len(parts) > 1 and parts[0] == "GET":
-        options = config.configuration()
-        filePath = options.DOCROOT + "/" + parts[1]
-        containsFile = os.path.isfile(filePath)
-        if ".." in parts[1] or "~" in parts[1]:
-            containsFile = True
+        print("file request:" +  parts[1])
+        if ".." in parts[1] or "~" in parts[1] or ".." == parts[1]:
             transmit(STATUS_FORBIDDEN,sock)
-            transmit("File request contains illeoigal characters (either .. or ~)",sock)
-        if containsFile == True:
+            transmit("File request contains illegal characters (either .. or ~)",sock)
+        else:
+            options = config.configuration()
+            filePath = options.DOCROOT + "/" + parts[1]
+            containsFile = os.path.isfile(filePath)
+            if containsFile == True:
                     transmit(STATUS_OK,sock)
                     fileContents = open(filePath,"r")
                     fileLine = fileContents.read()
                     transmit(fileLine, sock)
-        if containsFile == False:
-            transmit(STATUS_NOT_FOUND,sock)
-            transmit("requested file was not found", sock)
+            else:
+                transmit(STATUS_NOT_FOUND,sock)
+                transmit("requested file was not found", sock)
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
